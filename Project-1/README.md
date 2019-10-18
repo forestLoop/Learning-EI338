@@ -88,4 +88,4 @@ Elapsed seconds: 190s
 
 Or the screenshot:
 
-![Screenshot](.\screenshot.png)
+![Screenshot](./screenshot.png)
