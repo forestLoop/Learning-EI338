@@ -100,5 +100,6 @@ int main(void) {
             wait(NULL);
         }
     }
+    refresh_args(args);     // to avoid memory leaks!
     return 0;
 }
