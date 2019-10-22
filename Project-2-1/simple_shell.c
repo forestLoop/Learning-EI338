@@ -60,6 +60,17 @@ size_t parse_input(char *args[]) {
     return num;
 }
 
+/*
+ * Function: check_ampersand
+ * ----------------------------
+ *   Check whether an ampersand (&) is in the end of args. If so, remove it
+ *   from args and possibly reduce the size of args.
+ *
+ *   args: the array to check
+ *   size: the pointer to array size
+ *
+ *   returns: whether an ampersand is in the end
+ */
 int check_ampersand(char **args, size_t *size) {
     size_t len = strlen(args[*size - 1]);
     if(args[*size - 1][len - 1] != '&') {
