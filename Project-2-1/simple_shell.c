@@ -22,6 +22,17 @@ void init_args(char *args[]) {
 }
 
 /*
+ * Function: init_command
+ * ----------------------------
+ *   Initialize command, i.e., making it an empty string
+ *
+ *   command: the string to initialize
+ */
+void init_command(char *command) {
+    strcpy(command, "");
+}
+
+/*
  * Function: refresh_args
  * ----------------------------
  *   Refresh the content of args, i.e., free old content and set to NULL
@@ -38,19 +49,18 @@ void refresh_args(char *args[]) {
 /*
  * Function: parse_input
  * ----------------------------
- *   Get input from the user, parse and store it
+ *   Parse input and store arguments
  *
  *   args: the array to put arguments
+ *   command: the input command
  *
  *   returns: the number of arguments
  */
-size_t parse_input(char *args[]) {
-    char input_buffer[MAX_LINE + 1];
-    if(fgets(input_buffer, MAX_LINE + 1, stdin) == NULL) {
-        return 0;
-    }
+size_t parse_input(char *args[], char *original_command) {
     size_t num = 0;
-    char *token = strtok(input_buffer, DELIMITERS);
+    char command[MAX_LINE + 1];
+    strcpy(command, original_command);  // make a copy since `strtok` will modify it
+    char *token = strtok(command, DELIMITERS);
     while(token != NULL) {
         args[num] = malloc(strlen(token) + 1);
         strcpy(args[num], token);
@@ -58,6 +68,33 @@ size_t parse_input(char *args[]) {
         token = strtok(NULL, DELIMITERS);
     }
     return num;
+}
+
+/*
+ * Function: get_input
+ * ----------------------------
+ *   Get command from input of history
+ *
+ *   command: last command
+ *
+ *   returns: success or not
+ */
+int get_input(char *command) {
+    char input_buffer[MAX_LINE + 1];
+    if(fgets(input_buffer, MAX_LINE + 1, stdin) == NULL) {
+        fprintf(stderr, "Failed to read input!\n");
+        return 0;
+    }
+    if(strncmp(input_buffer, "!!", 2) == 0) {
+        if(strlen(command) == 0) {  // no history yet
+            fprintf(stderr, "No history available yet!\n");
+            return 0;
+        }
+        printf("%s", command);    // keep the command unchanged and print it
+        return 1;
+    }
+    strcpy(command, input_buffer);  // update the command
+    return 1;
 }
 
 /*
@@ -86,12 +123,13 @@ int check_ampersand(char **args, size_t *size) {
     return 1;
 }
 
-/* TODO: execute commands in history */
 /* TODO: redirecting I/O */
 /* TODO: pipe */
 int main(void) {
     char *args[MAX_LINE / 2 + 1]; /* command line (of 80) has max of 40 arguments */
+    char command[MAX_LINE + 1];
     init_args(args);
+    init_command(command);
     while (1) {
         printf("osh>");
         fflush(stdout);
@@ -99,12 +137,15 @@ int main(void) {
         /* Make args empty before parsing */
         refresh_args(args);
         /* Get input and parse it */
-        size_t args_num = parse_input(args);
-        /* Print to debug */
-        for(size_t i = 0; i != args_num; ++i) {
-            printf("--%s--\n", args[i]);
+        if(!get_input(command)){
+            continue;
         }
-        fflush(stdout);
+        size_t args_num = parse_input(args, command);
+        /* Print to debug */
+        // for(size_t i = 0; i != args_num; ++i) {
+        //     printf("--%s--\n", args[i]);
+        // }
+        // fflush(stdout);
         /* Continue or exit */
         if(args_num == 0) { // empty input
             printf("Please enter the command! (or type \"exit\" to exit)\n");
