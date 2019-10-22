@@ -45,12 +45,12 @@ void refresh_args(char *args[]) {
  *   returns: the number of arguments
  */
 size_t parse_input(char *args[]) {
-    size_t num = 0;
-    char input_buffer[MAX_LINE + 1], *token;
+    char input_buffer[MAX_LINE + 1];
     if(fgets(input_buffer, MAX_LINE + 1, stdin) == NULL) {
         return 0;
     }
-    token = strtok(input_buffer, DELIMITERS);
+    size_t num = 0;
+    char *token = strtok(input_buffer, DELIMITERS);
     while(token != NULL) {
         args[num] = malloc(strlen(token) + 1);
         strcpy(args[num], token);
@@ -66,18 +66,15 @@ size_t parse_input(char *args[]) {
 /* TODO: pipe */
 int main(void) {
     char *args[MAX_LINE / 2 + 1]; /* command line (of 80) has max of 40 arguments */
-    int should_run = 1;
-    size_t args_num;
-    pid_t pid;
     init_args(args);
-    while (should_run) {
+    while (1) {
         printf("osh>");
         fflush(stdout);
         fflush(stdin);
         /* Make args empty before parsing */
         refresh_args(args);
         /* Get input and parse it */
-        args_num = parse_input(args);
+        size_t args_num = parse_input(args);
         /* Print to debug */
         for(size_t i = 0; i != args_num; ++i) {
             printf("--%s--\n", args[i]);
@@ -89,17 +86,17 @@ int main(void) {
             continue;
         }
         if(strcmp(args[0], "exit") == 0) {
-            should_run = 0;
-            continue;
+            break;
         }
         /* Create a child process and execute the command */
-        pid = fork();
+        pid_t pid = fork();
         if(pid < 0) {   // fork failed
             fprintf(stderr, "Failed to fork!\n");
             return 1;
         } else if (pid == 0) { // child process
             execvp(args[0], args);
         } else { // parent process
+            if(args[args_num - 1])
             wait(NULL);
         }
     }
