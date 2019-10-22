@@ -60,7 +60,21 @@ size_t parse_input(char *args[]) {
     return num;
 }
 
-/* TODO: detect '&' and set `run_in_background` */
+int check_ampersand(char **args, size_t *size) {
+    size_t len = strlen(args[*size - 1]);
+    if(args[*size - 1][len - 1] != '&') {
+        return 0;
+    }
+    if(len == 1) {  // remove this argument if it only contains '&'
+        free(args[*size - 1]);
+        args[*size - 1] = NULL;
+        --(*size);  // reduce its size
+    } else {
+        args[*size - 1][len - 1] = '\0';
+    }
+    return 1;
+}
+
 /* TODO: execute commands in history */
 /* TODO: redirecting I/O */
 /* TODO: pipe */
@@ -88,6 +102,8 @@ int main(void) {
         if(strcmp(args[0], "exit") == 0) {
             break;
         }
+        /* Detect '&' to determine whether to run concurrently */
+        int run_concurrently = check_ampersand(args, &args_num);
         /* Create a child process and execute the command */
         pid_t pid = fork();
         if(pid < 0) {   // fork failed
@@ -96,8 +112,9 @@ int main(void) {
         } else if (pid == 0) { // child process
             execvp(args[0], args);
         } else { // parent process
-            if(args[args_num - 1])
-            wait(NULL);
+            if(!run_concurrently) { // parent and child run concurrently
+                wait(NULL);
+            }
         }
     }
     refresh_args(args);     // to avoid memory leaks!
