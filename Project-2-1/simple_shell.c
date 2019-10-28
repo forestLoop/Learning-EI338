@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 
@@ -123,7 +125,115 @@ int check_ampersand(char **args, size_t *size) {
     return 1;
 }
 
-/* TODO: redirecting I/O */
+/*
+ * Function: check_redirection
+ * ----------------------------
+ *   Check the redirection tokens in arguments and remove such tokens.
+ *
+ *   args: arguments list
+ *   size: the number of arguments
+ *   input_file: file name for input
+ *   output_file: file name for output
+ *
+ *   returns: IO flag (bit 1 for output, bit 0 for input)
+ */
+unsigned check_redirection(char **args, size_t *size, char **input_file, char **output_file) {
+    unsigned flag = 0;
+    size_t to_remove[4], remove_cnt = 0;
+    for(size_t i = 0; i != *size; ++i) {
+        if(remove_cnt >= 4) {
+            break;
+        }
+        if(strcmp("<", args[i]) == 0) {     // input
+            to_remove[remove_cnt++] = i;
+            if(i == (*size) - 1) {
+                fprintf(stderr, "No input file provided!\n");
+                break;
+            }
+            flag |= 1;
+            *input_file = args[i + 1];
+            to_remove[remove_cnt++] = ++i;
+        } else if(strcmp(">", args[i]) == 0) {   // output
+            to_remove[remove_cnt++] = i;
+            if(i == (*size) - 1) {
+                fprintf(stderr, "No output file provided!\n");
+                break;
+            }
+            flag |= 2;
+            *output_file = args[i + 1];
+            to_remove[remove_cnt++] = ++i;
+        }
+    }
+    /* Remove I/O indicators and filenames from arguments */
+    for(int i = remove_cnt - 1; i >= 0; --i) {
+        size_t pos = to_remove[i];  // the index of arg to remove
+        // printf("%lu %s\n", pos, args[pos]);
+        while(pos != *size) {
+            args[pos] = args[pos + 1];
+            ++pos;
+        }
+        --(*size);
+    }
+    return flag;
+}
+
+/*
+ * Function: redirect_io
+ * ----------------------------
+ *   Open files and redirect I/O.
+ *
+ *   io_flag: the flag for IO redirection (bit 1 for output, bit 0 for input)
+ *   input_file: file name for input
+ *   output_file: file name for output
+ *   input_decs: file descriptor of input file
+ *   output_decs: file descriptor of output file
+ *
+ *   returns: success or not
+ */
+int redirect_io(unsigned io_flag, char *input_file, char *output_file, int *input_desc, int *output_desc) {
+    // printf("IO flag: %u\n", io_flag);
+    if(io_flag & 2) {  // redirecting output
+        *output_desc = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 644);
+        if(*output_desc < 0) {
+            fprintf(stderr, "Failed to open the output file: %s\n", output_file);
+            return 0;
+        }
+        // printf("Output To: %s %d\n", output_file, *output_desc);
+        dup2(*output_desc, STDOUT_FILENO);
+    }
+    if(io_flag & 1) { // redirecting input
+        *input_desc = open(input_file, O_RDONLY, 0644);
+        if(*input_desc < 0) {
+            fprintf(stderr, "Failed to open the input file: %s\n", input_file);
+            return 0;
+        }
+        // printf("Input from: %s %d\n", input_file, *input_desc);
+        dup2(*input_desc, STDIN_FILENO);
+    }
+    return 1;
+}
+
+/*
+ * Function: close_file
+ * ----------------------------
+ *   Close files for input and output.
+ *
+ *   io_flag: the flag for IO redirection (bit 1 for output, bit 0 for input)
+ *   input_decs: file descriptor of input file
+ *   output_decs: file descriptor of output file
+ *
+ *   returns: void
+ */
+void close_file(unsigned io_flag, int input_desc, int output_desc) {
+    if(io_flag & 2) {
+        close(output_desc);
+    }
+    if(io_flag & 1) {
+        close(input_desc);
+    }
+}
+
+
 /* TODO: pipe */
 int main(void) {
     char *args[MAX_LINE / 2 + 1]; /* command line (of 80) has max of 40 arguments */
@@ -137,7 +247,7 @@ int main(void) {
         /* Make args empty before parsing */
         refresh_args(args);
         /* Get input and parse it */
-        if(!get_input(command)){
+        if(!get_input(command)) {
             continue;
         }
         size_t args_num = parse_input(args, command);
@@ -154,6 +264,10 @@ int main(void) {
         if(strcmp(args[0], "exit") == 0) {
             break;
         }
+        /* Redirect I/O */
+        char *input_file, *output_file;
+        int input_desc, output_desc;
+        unsigned io_flag = check_redirection(args, &args_num, &input_file, &output_file);    // bit 1 for output, bit 0 for input
         /* Detect '&' to determine whether to run concurrently */
         int run_concurrently = check_ampersand(args, &args_num);
         /* Create a child process and execute the command */
@@ -162,7 +276,11 @@ int main(void) {
             fprintf(stderr, "Failed to fork!\n");
             return 1;
         } else if (pid == 0) { // child process
+            if(redirect_io(io_flag, input_file, output_file, &input_desc, &output_desc) == 0) {
+                fprintf(stderr, "Cancel all I/O redirection.\n");
+            }
             execvp(args[0], args);
+            close_file(io_flag, input_desc, output_desc);
         } else { // parent process
             if(!run_concurrently) { // parent and child run concurrently
                 wait(NULL);
