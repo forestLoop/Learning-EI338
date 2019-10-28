@@ -233,6 +233,107 @@ void close_file(unsigned io_flag, int input_desc, int output_desc) {
     }
 }
 
+/*
+ * Function: detect_pipe
+ * ----------------------------
+ *   Detect the pipe '|' and split aruguments into two parts accordingly.
+ *
+ *   args: arguments list for the first command
+ *   args_num: number of arguments for the first command
+ *   args2: arguments list for the second command
+ *   args_num2: number of arguments for the second command
+ *
+ *   returns: void
+ */
+void detect_pipe(char **args, size_t *args_num, char ***args2, size_t *args_num2) {
+    for(size_t i = 0; i != *args_num; ++i) {
+        if (strcmp(args[i], "|") == 0) {
+            free(args[i]);
+            args[i] = NULL;
+            *args_num2 = *args_num -  i - 1;
+            *args_num = i;
+            *args2 = args + i + 1;
+            break;
+        }
+    }
+}
+
+/*
+ * Function: run_command
+ * ----------------------------
+ *   Run the command.
+ *
+ *   args: arguments list
+ *   args_num: number of arguments
+ *
+ *   returns: success or not
+ */
+int run_command(char **args, size_t args_num) {
+    /* Detect '&' to determine whether to run concurrently */
+    int run_concurrently = check_ampersand(args, &args_num);
+    /* Detect pipe */
+    char **args2;
+    size_t args_num2 = 0;
+    detect_pipe(args, &args_num, &args2, &args_num2);
+    /* Create a child process and execute the command */
+    pid_t pid = fork();
+    if(pid < 0) {   // fork failed
+        fprintf(stderr, "Failed to fork!\n");
+        return 0;
+    } else if (pid == 0) { // child process
+        if(args_num2 != 0) {    // pipe
+            /* Create pipe */
+            int fd[2];
+            pipe(fd);
+            /* Fork into another two processes */
+            pid_t pid2 = fork();
+            if(pid2 == 0) {
+                /* Redirect I/O */
+                char *input_file, *output_file;
+                int input_desc, output_desc;
+                unsigned io_flag = check_redirection(args2, &args_num2, &input_file, &output_file);    // bit 1 for output, bit 0 for input
+                io_flag &= 2;   // disable input redirection
+                if(redirect_io(io_flag, input_file, output_file, &input_desc, &output_desc) == 0) {
+                    return 0;
+                }
+                close(fd[1]);
+                dup2(fd[0], STDIN_FILENO);
+                execvp(args2[0], args2);
+                close_file(io_flag, input_desc, output_desc);
+                close(fd[0]);
+            } else if(pid2 > 0) {
+                /* Redirect I/O */
+                char *input_file, *output_file;
+                int input_desc, output_desc;
+                unsigned io_flag = check_redirection(args, &args_num, &input_file, &output_file);    // bit 1 for output, bit 0 for input
+                io_flag &= 1;   // disable output redirection
+                if(redirect_io(io_flag, input_file, output_file, &input_desc, &output_desc) == 0) {
+                    return 0;
+                }
+                close(fd[0]);
+                dup2(fd[1], STDOUT_FILENO);
+                execvp(args[0], args);
+                close_file(io_flag, input_desc, output_desc);
+                close(fd[1]);
+            }
+        } else {    // no pipe
+            /* Redirect I/O */
+            char *input_file, *output_file;
+            int input_desc, output_desc;
+            unsigned io_flag = check_redirection(args, &args_num, &input_file, &output_file);    // bit 1 for output, bit 0 for input
+            if(redirect_io(io_flag, input_file, output_file, &input_desc, &output_desc) == 0) {
+                return 0;
+            }
+            execvp(args[0], args);
+            close_file(io_flag, input_desc, output_desc);
+        }
+    } else { // parent process
+        if(!run_concurrently) { // parent and child run concurrently
+            wait(NULL);
+        }
+    }
+    return 1;
+}
 
 /* TODO: pipe */
 int main(void) {
@@ -251,11 +352,6 @@ int main(void) {
             continue;
         }
         size_t args_num = parse_input(args, command);
-        /* Print to debug */
-        // for(size_t i = 0; i != args_num; ++i) {
-        //     printf("--%s--\n", args[i]);
-        // }
-        // fflush(stdout);
         /* Continue or exit */
         if(args_num == 0) { // empty input
             printf("Please enter the command! (or type \"exit\" to exit)\n");
@@ -264,28 +360,8 @@ int main(void) {
         if(strcmp(args[0], "exit") == 0) {
             break;
         }
-        /* Redirect I/O */
-        char *input_file, *output_file;
-        int input_desc, output_desc;
-        unsigned io_flag = check_redirection(args, &args_num, &input_file, &output_file);    // bit 1 for output, bit 0 for input
-        /* Detect '&' to determine whether to run concurrently */
-        int run_concurrently = check_ampersand(args, &args_num);
-        /* Create a child process and execute the command */
-        pid_t pid = fork();
-        if(pid < 0) {   // fork failed
-            fprintf(stderr, "Failed to fork!\n");
-            return 1;
-        } else if (pid == 0) { // child process
-            if(redirect_io(io_flag, input_file, output_file, &input_desc, &output_desc) == 0) {
-                fprintf(stderr, "Cancel all I/O redirection.\n");
-            }
-            execvp(args[0], args);
-            close_file(io_flag, input_desc, output_desc);
-        } else { // parent process
-            if(!run_concurrently) { // parent and child run concurrently
-                wait(NULL);
-            }
-        }
+        /* Run command */
+        run_command(args, args_num);
     }
     refresh_args(args);     // to avoid memory leaks!
     return 0;
