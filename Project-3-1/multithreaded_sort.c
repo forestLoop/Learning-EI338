@@ -19,8 +19,8 @@ int cmp(const void  *a, const void *b) {
 /* The thread will do the sorting */
 void *runner(void *param) {
     size_t low, high;
-    low = ((parameters*)param)->low;
-    high = ((parameters*)param)->high;
+    low = ((parameters *)param)->low;
+    high = ((parameters *)param)->high;
     // printf("Low: %lu, high: %lu\n", low, high);
     qsort(array + low, high - low, sizeof(int), cmp);
     pthread_exit(0);
@@ -34,31 +34,32 @@ void init_array() {
     }
 }
 
-void merge_array(int *result){
-	size_t low1 = 0, high1 = array_size / 2;
-	size_t low2 = array_size / 2, high2 = array_size;
-	size_t i = 0;
-	while(low1 < high1 && low2 < high2){
-		if(array[low1] < array[low2]){
-			result[i++] = array[low1++];
-		}else{
-			result[i++] = array[low2++];
-		}
-	}
-	if(low2 < high2){
-		low1 = low2, high1 = high2;
-	}
-	while(low1 < high1){
-		result[i++] = array[low1++];
-	}
+void merge_array(int *result) {
+    size_t low1 = 0, high1 = array_size / 2;
+    size_t low2 = array_size / 2, high2 = array_size;
+    size_t i = 0;
+    while(low1 < high1 && low2 < high2) {
+        if(array[low1] < array[low2]) {
+            result[i++] = array[low1++];
+        } else {
+            result[i++] = array[low2++];
+        }
+    }
+    if(low2 < high2) {
+        low1 = low2, high1 = high2;
+    }
+    while(low1 < high1) {
+        result[i++] = array[low1++];
+    }
 }
 
-void print_array(int *arr, size_t size){
-	for(size_t i = 0; i != size; ++i){
-		printf("%d ", arr[i]);
-	}
-	printf("\n");
+void print_array(int *arr, size_t size) {
+    for(size_t i = 0; i != size; ++i) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
 }
+
 int main() {
     pthread_t tid[2];
     pthread_attr_t attr; /* set of attributes for the thread */
