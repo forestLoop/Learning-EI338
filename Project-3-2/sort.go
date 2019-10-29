@@ -110,7 +110,7 @@ func quick_sort(arr []int) {
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	arr_size := rand.Intn(MAXSIZE) + 1
-	fmt.Printf("Generate a random array of size %v.\n",arr_size)
+	fmt.Printf("Generate a random array of size %v.\n", arr_size)
 	var arr, init_arr []int
 	for i := 0; i != arr_size; i++ {
 		init_arr = append(init_arr, rand.Intn(MAXINT))
