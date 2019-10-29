@@ -335,7 +335,6 @@ int run_command(char **args, size_t args_num) {
     return 1;
 }
 
-/* TODO: pipe */
 int main(void) {
     char *args[MAX_LINE / 2 + 1]; /* command line (of 80) has max of 40 arguments */
     char command[MAX_LINE + 1];
