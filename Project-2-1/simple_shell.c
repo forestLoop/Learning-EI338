@@ -302,6 +302,7 @@ int run_command(char **args, size_t args_num) {
                 execvp(args2[0], args2);
                 close_file(io_flag, input_desc, output_desc);
                 close(fd[0]);
+                fflush(stdin);
             } else if(pid2 == 0) {  // grandchild process for the first command
                 /* Redirect I/O */
                 char *input_file, *output_file;
@@ -316,6 +317,7 @@ int run_command(char **args, size_t args_num) {
                 execvp(args[0], args);
                 close_file(io_flag, input_desc, output_desc);
                 close(fd[1]);
+                fflush(stdin);
             }
         } else {    // no pipe
             /* Redirect I/O */
@@ -327,6 +329,7 @@ int run_command(char **args, size_t args_num) {
             }
             execvp(args[0], args);
             close_file(io_flag, input_desc, output_desc);
+            fflush(stdin);
         }
     } else { // parent process
         if(!run_concurrently) { // parent and child run concurrently
