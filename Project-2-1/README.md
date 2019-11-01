@@ -224,19 +224,19 @@ if(args_num2 != 0) {    // pipe
 
 ## Result
 
-Here's some tests for its functionalities (reformatted here):
+Here's some tests for its functionalities:
 
 ```bash
-osh> ls -a
+osh>ls -a
 .  ..  Makefile  README.md  simple_shell  simple_shell.c  simple_shell.o
 
-osh> !!
+osh>!!
 ls -a
 .  ..  Makefile  README.md  simple_shell  simple_shell.c  simple_shell.o
 
-osh>ls > test_io.txt &
+osh>ls > test_io.txt
 
-osh> sort < test_io.txt
+osh>sort < test_io.txt
 Makefile
 README.md
 simple_shell
@@ -244,25 +244,34 @@ simple_shell.c
 simple_shell.o
 test_io.txt
 
-osh> ls -al | sort
+osh>ls -al | sort
+drwxrwxrwx 1 root root  4096 Nov  1 22:57 .
 drwxrwxrwx 1 root root  4096 Oct 29 21:33 ..
-drwxrwxrwx 1 root root  4096 Oct 29 22:51 .
--rwxrwxrwx 1 root root 11270 Oct 29 22:50 simple_shell.c
+-rwxrwxrwx 1 root root 11497 Nov  1 22:56 simple_shell.c
 -rwxrwxrwx 1 root root   158 Oct 22 19:53 Makefile
--rwxrwxrwx 1 root root 17888 Oct 29 22:50 simple_shell
--rwxrwxrwx 1 root root  7276 Oct 29 22:40 README.md
--rwxrwxrwx 1 root root    74 Oct 29 22:51 test_io.txt
--rwxrwxrwx 1 root root  8888 Oct 29 22:50 simple_shell.o
-total 55
+-rwxrwxrwx 1 root root 17888 Nov  1 22:56 simple_shell
+-rwxrwxrwx 1 root root    74 Nov  1 22:57 test_io.txt
+-rwxrwxrwx 1 root root  8236 Oct 29 22:56 README.md
+-rwxrwxrwx 1 root root  9048 Nov  1 22:56 simple_shell.o
+total 56
 
-osh> cat < test_io.txt | sort > sorted_io.txt
+osh>cat < test_io.txt | sort > test_io_sorted.txt
 
-osh> cat sorted_io.txt
+osh>cat test_io_sorted.txt
 Makefile
 README.md
 simple_shell
 simple_shell.c
 simple_shell.o
 test_io.txt
+
+osh>
+Please enter the command! (or type "exit" to exit)
+
+osh>exit
 ```
+
+Or the corresponding screenshot:
+
+![Screenshot](./screenshot.png)
 
