@@ -287,7 +287,7 @@ int run_command(char **args, size_t args_num) {
             pipe(fd);
             /* Fork into another two processes */
             pid_t pid2 = fork();
-            if(pid2 == 0) {
+            if(pid2 > 0) {  // child process for the second command
                 /* Redirect I/O */
                 char *input_file, *output_file;
                 int input_desc, output_desc;
@@ -298,10 +298,11 @@ int run_command(char **args, size_t args_num) {
                 }
                 close(fd[1]);
                 dup2(fd[0], STDIN_FILENO);
+                wait(NULL);     // wait for the first command to finish
                 execvp(args2[0], args2);
                 close_file(io_flag, input_desc, output_desc);
                 close(fd[0]);
-            } else if(pid2 > 0) {
+            } else if(pid2 == 0) {  // grandchild process for the first command
                 /* Redirect I/O */
                 char *input_file, *output_file;
                 int input_desc, output_desc;
