@@ -12,7 +12,9 @@ Actually, these projects are all from each chapter's programming projects in *Op
 | [2-2](./Project-2-2)              | Linux Kernel Module for Task Information | (Chapter 3) Write a Linux kernel module that uses the /proc file system for displaying a task’s information based on its PID. |
 | [3-1](./Project-3-1)              | Multithreaded Sorting Application        | (Chapter 4) Write a multithreaded sorting program.           |
 | [3-2](./Project-3-2)               | Fork-Join Sorting Application            | (Chapter 4) Implement the preceding project in Java (**I use Golang instead**) including quick sort and merge sort. |
-
+| [4](./Project-4) | Scheduling Algorithms | (Chapter 5) Implement a demo for several CPU scheduling algorithms: FCFS, SJF, Priority, RR, Priority with RR |
+| [5-1](./Project-5-1) | Designing a Thread Pool | (Chapter 7) Create and manage a thread pool with Pthreads and POSIX synchronization |
+| [5-2](./Project-5-2) | The Producer–Consumer Problem | (Chapter 7) Use standard counting semaphores and a mutex lock to solve the producer-consumer problem |
 
 
 
