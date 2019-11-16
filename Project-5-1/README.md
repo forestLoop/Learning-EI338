@@ -1,4 +1,4 @@
-# Project 4: Designing a Thread Pool
+# Project 5-1: Designing a Thread Pool
 
 Designing a Thread Pool. (Operating System Concepts, 10th Edition, Chapter 7)
 
