@@ -16,13 +16,17 @@ int main(int argc, char *argv[]) {
     init_buffer();
     /* 3. Create producer thread(s) */
     pthread_t *producers = malloc(numProducer * sizeof(pthread_t));
+    int *producer_id = malloc(numProducer * sizeof(pthread_t));
     for(size_t i = 0 ; i != numProducer; ++i) {
-        pthread_create(&producers[i], NULL, producer, NULL);
+        producer_id[i] = i + 1;
+        pthread_create(&producers[i], NULL, producer, &producer_id[i]);
     }
     /* 4. Create consumer thread(s) */
     pthread_t *consumers = malloc(numConsumer * sizeof(pthread_t));
+    int *consumer_id = malloc(numConsumer * sizeof(pthread_t));
     for(size_t i = 0; i != numConsumer; ++i) {
-        pthread_create(&consumers[i], NULL, consumer, NULL);
+        consumer_id[i] = i + 1;
+        pthread_create(&consumers[i], NULL, consumer, &consumer_id[i]);
     }
     /* 5. Sleep */
     printf("Sleep for %u second(s) before exit.\n", sleepSecond);
@@ -38,7 +42,9 @@ int main(int argc, char *argv[]) {
         pthread_join(consumers[i], NULL);
     }
     free(producers);
+    free(producer_id);
     free(consumers);
+    free(consumer_id);
     destroy_buffer();
     return 0;
 }

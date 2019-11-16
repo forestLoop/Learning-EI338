@@ -46,7 +46,7 @@ void *producer(void *param) {
         if (insert_item(item)) {
             fprintf(stderr, "Error: failed to insert item.\n");
         } else {
-            printf("Producer produced %d.\n", item);
+            printf("Producer %i produced %d.\n", *(int *)param, item);
         }
     }
 }
@@ -59,7 +59,7 @@ void *consumer(void *param) {
         if (remove_item(&item)) {
             fprintf(stderr, "Error: failed to remove item.\n");
         } else {
-            printf("Consumer consumed %d.\n", item);
+            printf("Consumer %i consumed %d.\n", *(int *)param, item);
         }
     }
 }
