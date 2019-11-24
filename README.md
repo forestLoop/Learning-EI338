@@ -1,5 +1,5 @@
 # Learning-EI338
-Code for EI338 Operating System in SJTU. 
+Code for EI338 Operating System in SJTU.
 
 Actually, these projects are all from each chapter's programming projects in *Operating System Concepts (10th Edition)* .
 
@@ -15,6 +15,7 @@ Actually, these projects are all from each chapter's programming projects in *Op
 | [4](./Project-4) | Scheduling Algorithms | (Chapter 5) Implement a demo for several CPU scheduling algorithms: FCFS, SJF, Priority, RR, Priority with RR |
 | [5-1](./Project-5-1) | Designing a Thread Pool | (Chapter 7) Create and manage a thread pool with Pthreads and POSIX synchronization |
 | [5-2](./Project-5-2) | The Producer–Consumer Problem | (Chapter 7) Use standard counting semaphores and a mutex lock to solve the producer-consumer problem |
+| [6](./Project-6) | Banker’s Algorithm | (Chapter 8) Write a program that implements the banker's algorithm |
 
 
 
