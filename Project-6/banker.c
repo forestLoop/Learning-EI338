@@ -15,6 +15,37 @@ int allocation[NUMBER_OF_CUSTOMERS][NUMBER_OF_RESOURCES];
 /* the remaining need of each customer */
 int need[NUMBER_OF_CUSTOMERS][NUMBER_OF_RESOURCES];
 
+int is_leq(int *a, int *b, int n) {
+    for(int i = 0 ; i != n; ++i) {
+        if(a[i] > b[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int is_safe() {
+    int work[NUMBER_OF_RESOURCES], finish[NUMBER_OF_CUSTOMERS];
+    memcpy(work, available, NUMBER_OF_RESOURCES * sizeof(int));
+    memset(finish, 0, NUMBER_OF_CUSTOMERS * sizeof(int));
+    for(int round = 0; round != NUMBER_OF_CUSTOMERS; ++round) {
+        int flag = 0;
+        for(int i = 0; i != NUMBER_OF_CUSTOMERS; ++i) {
+            if(finish[i] == 0 && is_leq(need[i], work, NUMBER_OF_RESOURCES)) {
+                flag = 1;
+                finish[i] = 1;
+                for(int j = 0; j != NUMBER_OF_RESOURCES; ++j) {
+                    work[j] += allocation[i][j];
+                }
+                break;
+            }
+        }
+        if(!flag) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 // Banker's Algorithm: request resources
 // customer: the target customer
@@ -53,6 +84,16 @@ int request_resources(int customer, int request[NUMBER_OF_RESOURCES]) {
         available[i] -= request[i];
         allocation[customer][i] += request[i];
         need[customer][i] -= request[i];
+    }
+    if(!is_safe()) {
+        // rollback
+        printf("Unsafe state after request!\n");
+        for(int i = 0; i != NUMBER_OF_RESOURCES; ++i) {
+            available[i] += request[i];
+            allocation[customer][i] -= request[i];
+            need[customer][i] += request[i];
+        }
+        return -3;
     }
     return 0;
 }
