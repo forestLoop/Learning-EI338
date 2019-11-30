@@ -5,10 +5,12 @@
 
 #define OFFSET_BITS 8
 #define PAGE_BITS 8
-#define FRAME_BITS 8
+#define FRAME_BITS 7    // the physical memory is smaller than the virtual one
 
 #define PAGE_SIZE (1 << OFFSET_BITS)
 #define FRAME_SIZE PAGE_SIZE
+#define TLB_SIZE 16
+
 #define NUMBER_OF_PAGES (1 << PAGE_BITS)
 #define NUMBER_OF_FRAMES (1 << FRAME_BITS)
 #define MEMORY_SIZE (FRAME_SIZE * NUMBER_OF_FRAMES)
@@ -19,31 +21,75 @@
 
 #define BACKING_STORAGE_FILE "BACKING_STORE.bin"
 
+typedef struct {
+    uint8_t valid;
+    uint32_t page, frame;
+} Pair;
+
+Pair TLB[TLB_SIZE];
+
 int8_t memory[MEMORY_SIZE];
-uint32_t page_table[NUMBER_OF_PAGES], next_available_frame;
+uint32_t page_table[NUMBER_OF_PAGES], next_available_frame, next_available_TLB;
 uint8_t page_valid[NUMBER_OF_PAGES];
 FILE *backing_storage, *input_file;
 
-uint32_t total_cnt, page_fault_cnt;
+uint32_t total_cnt, page_fault_cnt, TLB_miss_cnt;
+
+uint32_t select_victim_frame(){
+    // FIFO
+    if(next_available_frame < NUMBER_OF_FRAMES){
+        return next_available_frame++;
+    }
+    uint32_t victim = (next_available_frame++) % NUMBER_OF_FRAMES;
+    for(size_t i = 0; i != NUMBER_OF_PAGES; ++i){   // invalidate the victim page
+        if(page_valid[i] && page_table[i] == victim){
+            page_valid[i] = 0;
+            break;
+        }
+    }
+    return victim;
+}
 
 void handle_page_fault(uint32_t page_number) {
-    page_table[page_number] = next_available_frame++;
+    page_table[page_number] = select_victim_frame();
     fseek(backing_storage, page_number * PAGE_SIZE, SEEK_SET);
     fread(memory + page_table[page_number] * PAGE_SIZE, sizeof(int8_t), PAGE_SIZE, backing_storage);
     page_valid[page_number] = 1;
     ++page_fault_cnt;
 }
 
+int check_TLB(uint32_t page_number, uint32_t *frame_number) {
+    for(size_t i = 0; i != TLB_SIZE; ++i) {
+        if(TLB[i].valid && TLB[i].page == page_number) {
+            *frame_number = TLB[i].frame;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void update_TLB(uint32_t page_number, uint32_t frame_number) {
+    // FIFO
+    size_t victim = next_available_TLB % TLB_SIZE;
+    next_available_TLB = (next_available_TLB + 1) % TLB_SIZE;
+    TLB[victim].valid = 1;
+    TLB[victim].page = page_number, TLB[victim].frame = frame_number;
+}
+
+
 uint32_t translate_address(uint32_t logical) {
     ++total_cnt;
     uint32_t page_number, offset, frame_number;
     page_number = GET_PAGE_NUMBER(logical);
     offset = GET_OFFSET(logical);
-    // TODO: implementing TLB
-    if(page_valid[page_number] == 0) {    // page fault
-        handle_page_fault(page_number);
+    if(!check_TLB(page_number, &frame_number)) {    // TLB miss
+        ++TLB_miss_cnt;
+        if(page_valid[page_number] == 0) {    // page fault
+            handle_page_fault(page_number);
+        }
+        frame_number = page_table[page_number];
+        update_TLB(page_number, frame_number);
     }
-    frame_number = page_table[page_number];
     return GET_PHYSICAL_ADDRESS(frame_number, offset);
 }
 
@@ -68,7 +114,7 @@ int init(int argc, char **argv) {
     }
     // initially, both the memory and page table are empty
     memset(page_valid, 0, sizeof(uint8_t) * NUMBER_OF_PAGES);
-    next_available_frame = 0;
+    next_available_frame = next_available_TLB = 0;
     return 0;
 }
 
@@ -83,7 +129,8 @@ void display_usage() {
 }
 
 void display_statistics() {
-    printf("Page fault rate:%.2f%%\n", (float)page_fault_cnt / total_cnt * 100);
+    printf("Page fault rate: %.2f%%\n", (float)page_fault_cnt / total_cnt * 100);
+    printf("TLB hit rate: %.2f%%\n", (float)(total_cnt - TLB_miss_cnt) / total_cnt * 100);
 }
 
 
