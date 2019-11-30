@@ -35,14 +35,14 @@ FILE *backing_storage, *input_file;
 
 uint32_t total_cnt, page_fault_cnt, TLB_miss_cnt;
 
-uint32_t select_victim_frame(){
+uint32_t select_victim_frame() {
     // FIFO
-    if(next_available_frame < NUMBER_OF_FRAMES){
+    if(next_available_frame < NUMBER_OF_FRAMES) {
         return next_available_frame++;
     }
     uint32_t victim = (next_available_frame++) % NUMBER_OF_FRAMES;
-    for(size_t i = 0; i != NUMBER_OF_PAGES; ++i){   // invalidate the victim page
-        if(page_valid[i] && page_table[i] == victim){
+    for(size_t i = 0; i != NUMBER_OF_PAGES; ++i) {  // invalidate the victim page
+        if(page_valid[i] && page_table[i] == victim) {
             page_valid[i] = 0;
             break;
         }
@@ -119,8 +119,12 @@ int init(int argc, char **argv) {
 }
 
 void clean_up() {
-    fclose(input_file);
-    fclose(backing_storage);
+    if(input_file) {
+        fclose(input_file);
+    }
+    if(backing_storage) {
+        fclose(backing_storage);
+    }
 }
 
 void display_usage() {
