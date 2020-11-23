@@ -69,7 +69,7 @@ static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, 
 After compiling and loading the module into the kernel, we have the following results:
 
 ```bash
-$ sudo insmode pid_module.ko
+$ sudo insmod pid_module.ko
 $ echo 1 > /proc/pid
 $ cat /proc/pid
 command = [systemd], pid = [1], state = [1]
