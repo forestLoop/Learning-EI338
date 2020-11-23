@@ -16,6 +16,8 @@ Actually, these projects are all from each chapter's programming projects in *Op
 | [5-1](./Project-5-1) | Designing a Thread Pool | (Chapter 7) Create and manage a thread pool with Pthreads and POSIX synchronization |
 | [5-2](./Project-5-2) | The Producer–Consumer Problem | (Chapter 7) Use standard counting semaphores and a mutex lock to solve the producer-consumer problem |
 | [6](./Project-6) | Banker’s Algorithm | (Chapter 8) Write a program that implements the banker's algorithm |
+| [7](./Project-7) | Contiguous Memory Allocation | (Chapter 9) Manage a contiguous region of memory and respond to different requests |
+| [8](./Project-8) | Designing a Virtual Memory Manager | (Chapter 10) Write a program that translates logical addresses to physical addresses for a virtual address space |
 
 
 
