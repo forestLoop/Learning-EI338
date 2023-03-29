@@ -5,7 +5,7 @@
 
 ### Makefile
 
-'''bash
+'''
 
 	obj-m += simple.o
 	all:
