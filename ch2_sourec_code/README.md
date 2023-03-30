@@ -28,3 +28,16 @@ The purpose of the make utility is to determine automatically which pieces of a 
 need to be recompiled, and issue the commands to recompile them.
 
 -C dir option: Change to directory dir before reading the makefiles or doing anything else.
+
+/lib/modules: This directory contains directories with kernel modules needed for the kernel.
+
+Uname is a command-line tool in Linux-based operating systems that prints or displays information about the kernel, system architecture, operating system, hardware, version information, and more.( -r This option prints the kernel release.)
+
+shell: it takes as an argument a shell command and expands to the output of the command. 
+
+The M= option causes that makefile to move back into your module source directory before trying to build the modules target.
+With the M variable, the makefile knows where your actual project files are and can change back to that location.
+
+ PWD: a internal variable or function of Makefile(need some help???)
+ 
+ clean: This is an optional rule. It allows you to type 'make clean' at the command line to get rid of your object and executable files.
