@@ -29,7 +29,7 @@ static ssize_t proc_read(struct file *file, char *buf, size_t count, loff_t *pos
 
 // #define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
 // LINUX_VERSION_CODE return the Linux version 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) // #include <linux/version.h>
 #define HAVE_PROC_OPS
 #endif
 
@@ -125,6 +125,9 @@ static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, 
 
         // copies the contents of buffer to userspace usr_buf
         copy_to_user(usr_buf, buffer, rv);
+        /*
+        unsigned long   copy_to_user (	void __user * to, const void * from, unsigned long n);
+        */
 
         return rv;
 }
