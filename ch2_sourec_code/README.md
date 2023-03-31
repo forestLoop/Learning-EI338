@@ -45,7 +45,8 @@ With the M variable, the makefile knows where your actual project files are and 
  
  ## Procedures
  '''
- 	make
+ 
+	make
 	
 	sudo insmod hello.ko
 	
