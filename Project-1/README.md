@@ -11,8 +11,8 @@ This assignment will involve designing two kernel modules:
 
 ## Environment
 
-- OS: Ubuntu 18.04 (Linux kernel version: 5.3.5)
-- Compiler: GCC 7.4.0 
+- OS: Ubuntu 22.04.2 LTS
+- Compiler: gcc (Ubuntu 11.3.0-1ubuntu1~22.04) 11.3.0
 
 ## Basic Ideas
 
