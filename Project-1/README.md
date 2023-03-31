@@ -20,55 +20,6 @@ In this project, I'm to write two kernel modules and load them into the kernel. 
 
 This project is quite easy and therefore, I don't think much explanation is needed here.
 
-## Details
-
-### jiffies_module.c
-
-In this module, the only thing I need to do is to read the value of `jiffies` and report it when `/proc/jiffies` is read. The code is quite simple, adapted from the sample code:
-
-```c
-static struct file_operations proc_ops = {
-    .owner = THIS_MODULE,
-    .read = proc_read,
-};
-
-static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, loff_t *pos)
-{
-    char buffer[BUFFER_SIZE];
-    int rv = 0;
-    static int completed = 0;
-    if (completed) {
-        completed = 0;
-        return 0;
-    }
-    completed = 1;
-    rv = sprintf(buffer, "Current value of jiffies: %lu\n", jiffies);
-    raw_copy_to_user(usr_buf, buffer, rv);
-    return rv;
-}
-```
-
-### seconds_module.c
-
-Based on the previous one, this module reports the elapsed time since the module gets loaded. To achieve this, simply store the value of `jiffies` when loaded and use it to calculate the elapsed time every time.
-
-```c
-unsigned long start_jiffies = 0;
-
-static int proc_init(void)
-{
-    // ...
-    start_jiffies = jiffies;
-    // ...
-}
-
-static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, loff_t *pos)
-{
-    // ...
-    rv = sprintf(buffer, "Elapsed seconds: %lus\n", (jiffies - start_jiffies) / HZ);
-    // ...
-}
-```
 
 ## Result
 
@@ -88,4 +39,4 @@ Elapsed seconds: 190s
 
 Or the screenshot:
 
-![Screenshot](./screenshot.png)
+![Screenshot](./screenshot_1.png)
