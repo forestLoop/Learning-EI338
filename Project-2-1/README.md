@@ -1,6 +1,6 @@
 # Project 2-1: UNIX Shell
 
-UNIX Shell. (Operating System Concepts, 10th Edition, Chapter 2)
+UNIX Shell. (Operating System Concepts, 10th Edition, Chapter 3)
 
 ## Description
 
