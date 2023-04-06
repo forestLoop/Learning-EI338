@@ -9,14 +9,22 @@
 
 #define MAX_LINE 80 /* 80 chars per line, per command */
 #define DELIMITERS " \t\n\v\f\r"
+/*
+    newline ............ \n
+    horizontal tab.... \t
+    vertical tab ....... \v
+    formfeed .......... \f
+    return ...... \r
+*/
 
 /*
  * Function: init_args
  * ----------------------------
  *   Initialize args, i.e., making all of its content NULL
- *
+ *   command line (of 80) has max of 40 arguments 
  *   args: the array to initialize
  */
+ 
 void init_args(char *args[]) {
     for(size_t i = 0; i != MAX_LINE / 2 + 1; ++i) {
         args[i] = NULL;
@@ -45,6 +53,8 @@ void refresh_args(char *args[]) {
     while(*args) {
         free(*args);  // to avoid memory leaks
         *args++ = NULL;
+        // *p++ increase p (and not *p), 
+        // and return the value of the address that p contained before the increment
     }
 }
 
@@ -63,6 +73,7 @@ size_t parse_input(char *args[], char *original_command) {
     char command[MAX_LINE + 1];
     strcpy(command, original_command);  // make a copy since `strtok` will modify it
     char *token = strtok(command, DELIMITERS);
+    // strtok: Split string into tokens
     while(token != NULL) {
         args[num] = malloc(strlen(token) + 1);
         strcpy(args[num], token);
@@ -75,7 +86,7 @@ size_t parse_input(char *args[], char *original_command) {
 /*
  * Function: get_input
  * ----------------------------
- *   Get command from input of history
+ *   Get command from input of history by typing !!
  *
  *   command: last command
  *
@@ -88,14 +99,17 @@ int get_input(char *command) {
         return 0;
     }
     if(strncmp(input_buffer, "!!", 2) == 0) {
+        // 	the contents of both strings are equal
         if(strlen(command) == 0) {  // no history yet
             fprintf(stderr, "No history available yet!\n");
+            // stderr: Standard error stream
             return 0;
         }
         printf("%s", command);    // keep the command unchanged and print it
         return 1;
     }
     strcpy(command, input_buffer);  // update the command
+    // char * strcpy ( char * destination, const char * source );
     return 1;
 }
 
@@ -174,7 +188,7 @@ unsigned check_redirection(char **args, size_t *size, char **input_file, char **
         }
         --(*size);
     }
-    return flag;
+    return flag; // 1 -> "<", 2 -> ">", 3 -> "<" and ">"
 }
 
 /*
@@ -194,6 +208,18 @@ int redirect_io(unsigned io_flag, char *input_file, char *output_file, int *inpu
     // printf("IO flag: %u\n", io_flag);
     if(io_flag & 2) {  // redirecting output
         *output_desc = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 644);
+        // int open(const char *pathname, int flags, mode_t mode);
+        // O_WRONLY  : Open for writing only.
+        // O_CREAT : If the file don't exists, the file shall be created
+        // O_TRUNC : If the file exists and is a regular file, and the file is successfully opened 
+        // O_RDWR or O_WRONLY, its length shall be truncated to 0, and the mode and owner shall be unchanged.
+        // Upon successful completion, the function shall open the file and return 
+        // a non-negative integer representing the lowest numbered unused file descriptor
+        // mode : rws: read/write/execute 
+        // r = 100b = 4
+        // w = 010b = 2
+        // x = 001b = 1
+        // -rw-r--r-- : 644
         if(*output_desc < 0) {
             fprintf(stderr, "Failed to open the output file: %s\n", output_file);
             return 0;
