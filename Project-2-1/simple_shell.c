@@ -153,7 +153,7 @@ int check_ampersand(char **args, size_t *size) {
  */
 unsigned check_redirection(char **args, size_t *size, char **input_file, char **output_file) {
     unsigned flag = 0;
-    size_t to_remove[4], remove_cnt = 0;
+    size_t to_remove[4], remove_cnt = 0; // to_remove : index of the position of the "<", ">", file 
     for(size_t i = 0; i != *size; ++i) {
         if(remove_cnt >= 4) {
             break;
@@ -222,19 +222,25 @@ int redirect_io(unsigned io_flag, char *input_file, char *output_file, int *inpu
         // -rw-r--r-- : 644
         if(*output_desc < 0) {
             fprintf(stderr, "Failed to open the output file: %s\n", output_file);
+            // s : 	String of characters
             return 0;
         }
         // printf("Output To: %s %d\n", output_file, *output_desc);
         dup2(*output_desc, STDOUT_FILENO);
+        // int dup2(int oldfd, int newfd); 
+        // STDOUT_FILENO : This macro has value 1, which is the file descriptor for standard output. 
+        // dup2() : the file descriptor newfd is adjusted so that it now
+        // refers to the same open file description as oldfd.
     }
     if(io_flag & 1) { // redirecting input
-        *input_desc = open(input_file, O_RDONLY, 0644);
+        *input_desc = open(input_file, O_RDONLY, 644); // ?? 0644
         if(*input_desc < 0) {
             fprintf(stderr, "Failed to open the input file: %s\n", input_file);
             return 0;
         }
         // printf("Input from: %s %d\n", input_file, *input_desc);
         dup2(*input_desc, STDIN_FILENO);
+        // STDIN_FILENO : This macro has value 0, which is the file descriptor for standard input. 
     }
     return 1;
 }
@@ -253,6 +259,9 @@ int redirect_io(unsigned io_flag, char *input_file, char *output_file, int *inpu
 void close_file(unsigned io_flag, int input_desc, int output_desc) {
     if(io_flag & 2) {
         close(output_desc);
+        // int close(int fd);
+        // close() closes a file descriptor, so that it no longer refers to
+        // any file and may be reused.
     }
     if(io_flag & 1) {
         close(input_desc);
