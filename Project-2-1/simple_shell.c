@@ -312,6 +312,13 @@ int run_command(char **args, size_t args_num) {
     detect_pipe(args, &args_num, &args2, &args_num2);
     /* Create a child process and execute the command */
     pid_t pid = fork();
+    // pid_t : a data type used to represent process IDs
+    // In the parent process, 
+    // the value of pid is set to the process ID of the child process that was created by fork(). 
+    // In the child process, the value of pid is set to 0, 
+    // indicating that it is the child process. 
+    // If fork() fails to create a child process due to an error, 
+    // it returns a negative integer value to the parent process
     if(pid < 0) {   // fork failed
         fprintf(stderr, "Failed to fork!\n");
         return 0;
@@ -320,6 +327,11 @@ int run_command(char **args, size_t args_num) {
             /* Create pipe */
             int fd[2];
             pipe(fd);
+            // int pipe(int pipefd[2]);
+            // creates a pipe, a unidirectional data channel that can be
+            // used for interprocess communication.
+            // pipefd[0] refers to the read end of the pipe. pipefd[1] refers
+            // to the write end of the pipe.
             /* Fork into another two processes */
             pid_t pid2 = fork();
             if(pid2 > 0) {  // child process for the second command
@@ -349,10 +361,28 @@ int run_command(char **args, size_t args_num) {
                 }
                 close(fd[0]);
                 dup2(fd[1], STDOUT_FILENO);
+                // int dup2(int oldfd, int newfd);
+                // the file descriptor newfd is adjusted so that it now
+                // refers to the same open file description as oldfd
+                // STDOUT_FILENO
+                // standard output stream
                 execvp(args[0], args);
+                // int execvp(const char *file, char *const argv[]);
+                // he first argument is a string that specifies 
+                // the name or path of the executable file to be executed
+                // the second argument is an array of strings that represents 
+                // the command-line arguments to be passed to the new process. 
+                
                 close_file(io_flag, input_desc, output_desc);
                 close(fd[1]);
-                fflush(stdin);
+                fflush(stdin); //  fflush() : flush the output buffer of a stream. 
+                /*
+                better:
+                int c;
+                while ((c = getchar()) != '\n' && c != EOF) {
+                    // discard input
+                }
+                */
             }
         } else {    // no pipe
             /* Redirect I/O */
@@ -380,7 +410,7 @@ int main(void) {
     init_args(args);
     init_command(command);
     while (1) {
-        printf("osh>");
+        printf("689>");
         fflush(stdout);
         fflush(stdin);
         /* Make args empty before parsing */
