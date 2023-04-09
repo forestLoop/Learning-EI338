@@ -346,6 +346,8 @@ int run_command(char **args, size_t args_num) {
                 close(fd[1]);
                 dup2(fd[0], STDIN_FILENO);
                 wait(NULL);     // wait for the first command to finish
+                // pid_t wait(int *status_ptr);
+                // Suspends the calling process until any one of its child processes ends.
                 execvp(args2[0], args2);
                 close_file(io_flag, input_desc, output_desc);
                 close(fd[0]);
