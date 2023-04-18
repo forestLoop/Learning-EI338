@@ -17,17 +17,34 @@ static int current_pid;
 static ssize_t proc_read(struct file *file, char *buf, size_t count, loff_t *pos);
 static ssize_t proc_write(struct file *file, const char __user *usr_buf, size_t count, loff_t *pos);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) // #include <linux/version.h>
+#define HAVE_PROC_OPS
+#endif
+
+#ifdef HAVE_PROC_OPS
+static struct proc_ops proc_ops = {
+        .proc_read = proc_read,
+        .proc_write = proc_write,
+};
+#else
 static struct file_operations proc_ops = {
     .owner = THIS_MODULE,
     .read = proc_read,
     .write = proc_write,
 };
+#endif
 
 /* This function is called when the module is loaded. */
 static int proc_init(void) {
     // creates the /proc/procfs entry
     proc_create(PROC_NAME, 0666, NULL, &proc_ops);
+    // struct proc_dir_entry *proc_create(const char *name, umode_t mode, struct proc_dir_entry *parent, const struct proc_ops *proc_ops);
+    // name: the name of the new file to be created. 
+    // mode: the permissions of the new file.
+    // parent: a pointer to the parent directory of the new file. 
+    // proc_ops: a pointer to a proc_ops structure that defines the operations that can be performed on the new file.
     printk(KERN_INFO "/proc/%s created\n", PROC_NAME);
+    //  KERN_INFO is the log level 
     return 0;
 }
 
@@ -91,7 +108,11 @@ static ssize_t proc_write(struct file *file, const char __user *usr_buf, size_t 
 
 /* Macros for registering module entry and exit points. */
 module_init( proc_init );
+// The module_init() macro defines which function is to be called at module insertion time 
+// (if the file is compiled as a module), or at boot time
 module_exit( proc_exit );
+// This macro defines the function to be called at module removal time 
+// (or never, in the case of the file compiled into the kernel).
 
 MODULE_LICENSE("GPL");  // MIT is not allowed here, because this module calls pid_task(), which is GPL only
 MODULE_DESCRIPTION(
