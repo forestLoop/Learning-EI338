@@ -63,6 +63,8 @@ static void proc_exit(void) {
  * once it has collected the data that is to go into the
  * corresponding /proc file.
  */
+
+ // a signed integer type
 static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, loff_t *pos) {
     int rv = 0;
     char buffer[BUFFER_SIZE];
@@ -73,6 +75,19 @@ static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, 
         return 0;
     }
     tsk = pid_task(find_vpid(current_pid), PIDTYPE_PID);
+    // struct pid *find_vpid(int nr)
+    // find_vpid() finds the pid by its virtual id, i.e. in the current namespace
+    // struct task_struct *pid_task(struct pid *pid, enum pid_type type)
+    // PIDTYPE_PID: This value indicates that the PID is a regular process ID.
+    /*
+    enum pid_type
+    {
+    PIDTYPE_PID,
+    PIDTYPE_PGID,
+    PIDTYPE_SID,
+    PIDTYPE_MAX
+    };
+    */
     if(tsk) {
         rv = snprintf(buffer, BUFFER_SIZE,
                       "command = [%s], pid = [%d], state = [%ld]\n",
@@ -115,8 +130,7 @@ module_exit( proc_exit );
 // (or never, in the case of the file compiled into the kernel).
 
 MODULE_LICENSE("GPL");  // MIT is not allowed here, because this module calls pid_task(), which is GPL only
-MODULE_DESCRIPTION(
-    "Report the task information when /proc/pid is read, after PID is written to /proc/pid.");
+MODULE_DESCRIPTION("Report the task information when /proc/pid is read, after PID is written to /proc/pid.");
 MODULE_AUTHOR("Keith Null");
 
 
