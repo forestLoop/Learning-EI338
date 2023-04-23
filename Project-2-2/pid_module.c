@@ -88,6 +88,7 @@ static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, 
     PIDTYPE_MAX
     };
     */
+    // pid : Pointer to the struct pid of the process. 
     if(tsk) {
         rv = snprintf(buffer, BUFFER_SIZE,
                       "command = [%s], pid = [%d], state = [%ld]\n",
