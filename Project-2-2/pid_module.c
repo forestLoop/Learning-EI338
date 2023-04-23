@@ -20,7 +20,7 @@ static ssize_t proc_write(struct file *file, const char __user *usr_buf, size_t 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) // #include <linux/version.h>
 #define HAVE_PROC_OPS
 #endif
-
+// Designated initializers for aggregate types : .a = b
 #ifdef HAVE_PROC_OPS
 static struct proc_ops proc_ops = {
         .proc_read = proc_read,
@@ -64,7 +64,9 @@ static void proc_exit(void) {
  * corresponding /proc file.
  */
 
- // a signed integer type
+ // ssize_t : a signed integer type
+ // char __user is a type qualifier used in 
+ // Linux kernel programming to indicate that a pointer argument points to user space memory. 
 static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, loff_t *pos) {
     int rv = 0;
     char buffer[BUFFER_SIZE];
@@ -89,10 +91,17 @@ static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, 
     };
     */
     // pid : Pointer to the struct pid of the process. 
+    // the task_struct structure contains all the information about a process
+    // comm : executable name of a process
+    //  the state of a process
     if(tsk) {
         rv = snprintf(buffer, BUFFER_SIZE,
                       "command = [%s], pid = [%d], state = [%ld]\n",
                       tsk->comm, current_pid, tsk->state);
+        // int snprintf ( char * s, size_t n, const char * format, ... );
+        // s : Pointer to a buffer where the resulting C-string is stored.
+        // n : Maximum number of bytes to be used in the buffer.
+        // return : The number of characters that would have been written
     } else {
         printk(KERN_INFO "Invalid PID %d!", current_pid);
         return 0;
@@ -101,6 +110,8 @@ static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, 
     // copies the contents of kernel buffer to userspace usr_buf
     if (raw_copy_to_user(usr_buf, buffer, rv)) {
         rv = -1;
+        // unsigned long raw_copy_to_user(void *to, const void *from, unsigned long n);
+        // n parameter specifies the number of bytes to copy from the source buffer
     }
     return rv;
 }
@@ -110,13 +121,22 @@ static ssize_t proc_write(struct file *file, const char __user *usr_buf, size_t 
     char *k_mem;
     // allocate kernel memory
     k_mem = kmalloc(count, GFP_KERNEL);
+    // void * kmalloc (	size_t size, gfp_t flags);
+    // GFP_KERNEL - Allocate normal kernel ram.
+    
     /* copies user space usr_buf to kernel buffer */
     if (raw_copy_from_user(k_mem, usr_buf, count)) {
+        // unsigned long raw_copy_from_user(void *to, const void __user *from, unsigned long n);
         printk( KERN_INFO "Error copying from user\n");
         return -1;
     }
     k_mem[count] = '\0';   // make sure k_mem is null-terminated
     kstrtoint(k_mem, 10, &current_pid);
+    // int kstrtoint(const char * s, unsigned int base, int * res);
+    // s : The start of the string.
+    // base : The number base to use.
+    // res : Where to write the result of the conversion on success.
+    // 
     printk(KERN_INFO "Set current PID to %d", current_pid);
     kfree(k_mem);
     return count;
