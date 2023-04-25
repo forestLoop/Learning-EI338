@@ -6,6 +6,7 @@
 #include <linux/proc_fs.h>
 #include <linux/vmalloc.h>
 #include <asm/uaccess.h>
+#include <linux/version.h>
 
 #define BUFFER_SIZE 128
 #define PROC_NAME "pid"
@@ -96,12 +97,13 @@ static ssize_t proc_read(struct file *file, char __user *usr_buf, size_t count, 
     //  the state of a process
     if(tsk) {
         rv = snprintf(buffer, BUFFER_SIZE,
-                      "command = [%s], pid = [%d], state = [%ld]\n",
-                      tsk->comm, current_pid, tsk->state);
+                      "command = [%s], pid = [%d], state = [%u]\n",
+                      tsk->comm, current_pid, tsk->__state);
         // int snprintf ( char * s, size_t n, const char * format, ... );
         // s : Pointer to a buffer where the resulting C-string is stored.
         // n : Maximum number of bytes to be used in the buffer.
         // return : The number of characters that would have been written
+        // unsigned int			__state;
     } else {
         printk(KERN_INFO "Invalid PID %d!", current_pid);
         return 0;
@@ -136,7 +138,7 @@ static ssize_t proc_write(struct file *file, const char __user *usr_buf, size_t 
     // s : The start of the string.
     // base : The number base to use.
     // res : Where to write the result of the conversion on success.
-    // 
+
     printk(KERN_INFO "Set current PID to %d", current_pid);
     kfree(k_mem);
     return count;
