@@ -14,8 +14,8 @@ Once a `pid` has been written to the `/proc/pid` file, subsequent reads from `/p
 
 ## Environment
 
-- OS: Ubuntu 18.04 (Linux kernel version: 5.3.5)
-- Compiler: GCC 7.4.0 
+- OS: Ubuntu 20.04 (Linux kernel version: 5.3.5)
+- Compiler: GCC 11.3.0 
 
 ## Basic Ideas
 
