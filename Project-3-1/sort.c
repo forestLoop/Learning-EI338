@@ -97,7 +97,7 @@ int main() {
     merge_array(sorted_array);
     printf("After merging:\n");
     print_array(sorted_array, array_size);
-    free(sorted_array)
+    free(sorted_array);
     return 0;
 }
 
