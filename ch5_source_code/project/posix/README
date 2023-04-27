@@ -13,3 +13,7 @@ For example, to build the FCFS scheduler, enter
 make fcfs
 
 which builds the fcfs executable file.
+
+./fcfs schedule.text
+
+which execute the scheduler.
