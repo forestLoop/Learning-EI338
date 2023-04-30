@@ -82,7 +82,13 @@ int main() {
     for(size_t i = 0; i != 2; ++i) {
         pthread_create(&tid[i], &attr, runner, &data[i]);
         // int pthread_create(pthread_t *restrict thread, const pthread_attr_t *restrict attr, void *(*start_routine)(void *), void *restrict arg);
+<<<<<<< HEAD
+        // By using restrict with a pointer, the programmer is telling the compiler that the pointer is 
+        // the only way to access the object it points to, and that there are no other pointers pointing to the same object1
+    
+=======
         // restrict :  By adding this type qualifier, a programmer hints to the compiler that for the lifetime of the pointer, no other pointer will be used to access the object to which it points.
+>>>>>>> 77ab4a9c3f4c05ca3e68d68b6c13a21f17409483
     }
     /* now wait for the thread to exit */
     for(size_t i = 0; i != 2; ++i) {
