@@ -82,6 +82,7 @@ int main() {
     for(size_t i = 0; i != 2; ++i) {
         pthread_create(&tid[i], &attr, runner, &data[i]);
         // int pthread_create(pthread_t *restrict thread, const pthread_attr_t *restrict attr, void *(*start_routine)(void *), void *restrict arg);
+        // restrict :  By adding this type qualifier, a programmer hints to the compiler that for the lifetime of the pointer, no other pointer will be used to access the object to which it points.
     }
     /* now wait for the thread to exit */
     for(size_t i = 0; i != 2; ++i) {
