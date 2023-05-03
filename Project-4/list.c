@@ -37,6 +37,7 @@ void delete(struct node **head, Task *task) {
         }
         prev->next = temp->next;
     }
+    free(temp);
 }
 
 // traverse the list

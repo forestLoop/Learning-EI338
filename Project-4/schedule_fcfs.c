@@ -32,6 +32,7 @@ Task *pickNextTask() {
         }
         lastNode = lastNode->next;
     }
+    // first-come, first-serve
     return lastNode->task;
 }
 
