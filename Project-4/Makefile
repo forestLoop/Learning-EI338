@@ -9,6 +9,10 @@
 CC=gcc
 CFLAGS=-Wall
 
+# CC : Program for compiling C programs; default 'cc'.
+# CFLAGS : Extra flags to give to the C compiler.
+# -Wall : This enables all the warnings about constructions.
+
 clean:
 	rm -rf *.o
 	rm -rf fcfs
